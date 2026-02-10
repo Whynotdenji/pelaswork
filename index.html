@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ourflix - Who's Watching?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --netflix-red: #E50914;
+            --netflix-dark: #141414;
+            --netflix-gray: #808080;
+            --netflix-light: #E5E5E5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--netflix-dark);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Profile Selection Page */
+        #profilePage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--netflix-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            transition: opacity 0.5s;
+        }
+
+        #profilePage.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .profile-title {
+            font-size: 3.5rem;
+            margin-bottom: 50px;
+            font-weight: 300;
+        }
+
+        .profiles-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .profile:hover {
+            transform: scale(1.1);
+        }
+
+        .profile:hover .profile-avatar {
+            border: 0px solid white;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            margin-bottom: 15px;
+            border: 3px solid transparent;
+            transition: border 0.3s;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 1.2rem;
+            color: var(--netflix-gray);
+            transition: color 0.3s;
+        }
+
+        .profile:hover .profile-name {
+            color: white;
+        }
+
+        .manage-profiles {
+            margin-top: 60px;
+            padding: 10px 30px;
+            border: 1px solid var(--netflix-gray);
+            color: var(--netflix-gray);
+            background: transparent;
+            font-size: 1rem;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        .manage-profiles:hover {
+            border-color: white;
+            color: white;
+        }
+
+        /* Main Site (Initially Hidden) */
+        #mainSite {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #mainSite.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, transparent);
+            transition: background 0.4s;
+        }
+
+        .navbar.scrolled {
+            background: var(--netflix-dark);
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            color: var(--netflix-red);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--netflix-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: var(--netflix-gray);
+        }
+
+        .current-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .current-profile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            overflow: hidden;
+        }
+
+        .current-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Hero Section */
+        .hero {
+    position: relative;
+    height: 90vh;
+    
+    /* REPLACE 'us.jpg' WITH THE EXACT NAME OF YOUR PHOTO FILE */
+    background: linear-gradient(to top, var(--netflix-dark) 10%, transparent 90%),
+                url('cover.jpg') center/cover;
+                
+    display: flex;
+    align-items: flex-end;
+    padding: 0 4%;
+    padding-bottom: 100px;
+}
+
+        .hero-content {
+            max-width: 600px;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            line-height: 1;
+        }
+
+        .hero-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            align-items: center;
+        }
+
+        .match {
+            color: #46d369;
+            font-weight: bold;
+        }
+
+        .year, .duration {
+            color: var(--netflix-light);
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            color: #d2d2d2;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s, opacity 0.2s;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        .btn-play {
+            background: white;
+            color: black;
+        }
+
+        .btn-info {
+            background: rgba(109, 109, 110, 0.7);
+            color: white;
+        }
+
+        /* Content Rows */
+        .content-rows {
+            margin-top: -50px;
+            padding: 0 4%;
+            position: relative;
+            z-index: 3;
+        }
+
+        .row {
+            margin-bottom: 50px;
+            scroll-margin-top: 80px;
+        }
+
+        .row-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .row-title::after {
+            content: '>';
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .row:hover .row-title::after {
+            opacity: 1;
+            transform: translateX(5px);
+        }
+
+        .row-container {
+            position: relative;
+        }
+
+        .slider {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 20px 0;
+            scrollbar-width: none;
+        }
+
+        .slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* NETFLIX-STYLE MOVIE CARDS WITH HOVER PREVIEW */
+        .movie-card {
+            flex: 0 0 auto;
+            width: 250px;
+            height: 140px;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s, margin 0.3s;
+            z-index: 1;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.4);
+            z-index: 10;
+            margin: 0 50px;
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .movie-card:hover .movie-info {
+            opacity: 1;
+        }
+
+        .movie-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .movie-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.7rem;
+            color: #46d369;
+        }
+
+        /* Valentine Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1f1f 100%);
+            max-width: 600px;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            animation: modalIn 0.3s ease;
+            text-align: center;
+            padding: 50px;
+            border: 0px solid var(--netflix-red);
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .valentine-question {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            color: var(--netflix-red);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .valentine-subtext {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: #d2d2d2;
+        }
+
+        .valentine-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            min-height: 100px;
+        }
+
+        .yes-btn {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .yes-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
+        }
+
+        .no-btn {
+            background: #333;
+            color: white;
+            border: 2px solid #555;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .close-modal:hover {
+            background: var(--netflix-red);
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            color: #46d369;
+            margin-bottom: 20px;
+        }
+
+        .success-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        /* Floating Hearts Animation */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .floating-heart {
+            position: absolute;
+            bottom: -100px;
+            font-size: 2rem;
+            animation: floatUp 4s ease-in infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-title {
+                font-size: 2rem;
+            }
+            
+            .profiles-container {
+                gap: 20px;
+            }
+            
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+            
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .movie-card {
+                width: 166px;
+                height: 93px;
+            }
+            
+            .movie-card:hover {
+                transform: scale(1.3);
+                margin: 0 30px;
+            }
+            
+            .valentine-question {
+                font-size: 2.5rem;
+            }
+            
+            .valentine-buttons {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Audio Element (Hidden) -->
+    <audio id="bgMusic" loop>
+        <source src="moosic.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Profile Selection Page -->
+    <div id="profilePage">
+        <h1 class="profile-title">Who's Watching?</h1>
+        <div class="profiles-container">
+            <div class="profile" onclick="selectProfile('you')">
+    <div class="profile-avatar">
+        <img src="pfp2.jpg" alt="Her">
+    </div>
+    <span class="profile-name">Aadhi</span>
+</div>
+
+<div class="profile" onclick="selectProfile('him')">
+    <div class="profile-avatar">
+        <img src="pfp1.jpg" alt="Me">
+    </div>
+    <span class="profile-name">Ichu</span>
+</div>
+        </div>
+        <button class="manage-profiles">MANAGE PROFILES</button>
+    </div>
+
+    <!-- Main Site (Hidden Initially) -->
+    <div id="mainSite">
+        <!-- Floating Hearts -->
+        <div class="hearts-container" id="heartsContainer"></div>
+
+        <!-- Navigation -->
+        <nav class="navbar" id="navbar">
+            <div class="logo" onclick="scrollToSection('home')">LoveFlix</div>
+            <div class="nav-links">
+                <a onclick="scrollToSection('home')">Home</a>
+                <a onclick="scrollToSection('memories')">Memories</a>
+                <a onclick="scrollToSection('reasons')">Why I Love You</a>
+                <a onclick="scrollToSection('futures')">Our Future</a>
+                <div class="current-profile" onclick="location.reload()">
+                    <div class="current-profile-avatar" id="navAvatar">You</div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <h1 class="hero-title">Aadhi & Ichu</h1>
+                <div class="hero-meta">
+                    <span class="match">100% Match</span>
+                    <span class="year">2022</span>
+                    <span class="duration">Season 3</span>
+                </div>
+                <p class="hero-description">
+                    Ichu a hopless romantic tries to swoo Aadhi,Aadhi falls for him eventually and accept—sorry Assepts his request.what began as
+                    two class monitors now buds into the most chaotic in the world
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-play" id="playBtn">
+                        <span>▶</span> Play Memory
+                    </button>
+                    <button class="btn btn-info" id="infoBtn">
+                        <span>ⓘ</span> More Info
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Rows -->
+        <div class="content-rows">
+            <!-- Row 1: Our Memories -->
+            <div class="row" id="memories">
+                <h2 class="row-title">Our Memories Together</h2>
+                <div class="row-container">
+                    <div class="slider">
+                        <div class="movie-card" data-modal="memory1">
+                            <img src="roof.jpg" alt="Roof">
+                            <div class="movie-info">
+                                <div class="movie-title">The Roof</div>
+                                <div class="movie-meta">★ 5.0 | Romance</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="memory2">
+                            <img src="Grad.jpg" alt="Adventures">
+                            <div class="movie-info">
+                                <div class="movie-title">Farewell</div>
+                                <div class="movie-meta">★ 5.0 | Adventure</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="memory3">
+                            <img src="Shopping.jpg" alt="Cozy Days">
+                            <div class="movie-info">
+                                <div class="movie-title">Ernakulam</div>
+                                <div class="movie-meta">★ 5.0 | Comfort</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="memory4">
+                            <img src="childrensday2.jpg" alt="Laughs">
+                            <div class="movie-info">
+                                <div class="movie-title">Childrens Day</div>
+                                <div class="movie-meta">★ 5.0 | Drama</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="memory5">
+                            <img src="skribl.jpg" alt="Special Moments">
+                            <div class="movie-info">
+                                <div class="movie-title">Scribble day</div>
+                                <div class="movie-meta">★ 5.0 | Comedy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Why I Love You -->
+            <div class="row" id="reasons">
+                <h2 class="row-title">Why I Love You</h2>
+                <div class="row-container">
+                    <div class="slider">
+                        <div class="movie-card" data-modal="reason1">
+                            <img src="childrensday1.jpg" alt="Your Smile">
+                            <div class="movie-info">
+                                <div class="movie-title">I Can be myself around you</div>
+                                <div class="movie-meta">★ 5.0 | Featured</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="reason2">
+                            <img src="hair.jpg" alt="Your Kindness">
+                            <div class="movie-info">
+                                <div class="movie-title">Your Hair</div>
+                                <div class="movie-meta">★ 5.0 | Top Pick</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="reason3">
+                            <img src="angry.jpg" alt="Angry Aadhi">
+                            <div class="movie-info">
+                                <div class="movie-title">Angry Aadhi</div>
+                                <div class="movie-meta">★ 5.0 | Trending</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="reason4">
+                            <img src="silly.jpg" alt="Your Eyes">
+                            <div class="movie-info">
+                                <div class="movie-title">My Girl</div>
+                                <div class="movie-meta">★ 5.0 | New</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="reason5">
+                            <img src="woah.jpg" alt="Everything">
+                            <div class="movie-info">
+                                <div class="movie-title">Just... Everything</div>
+                                <div class="movie-meta">★ 5.0 | Must Watch</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Our Playlist -->
+            <div class="row" id="futures">
+                <h2 class="row-title">Our Future</h2>
+                <div class="row-container">
+                    <div class="slider">
+                        <div class="movie-card" data-modal="future1">
+                            <img src="hehe.jpg" alt="future 1">
+                            <div class="movie-info">
+                                <div class="movie-title">"Tasting You"</div>
+                                <div class="movie-meta">▶ Play</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="future2">
+                            <img src="sorry.jpg" alt="future 2">
+                            <div class="movie-info">
+                                <div class="movie-title">Dance With Me</div>
+                                <div class="movie-meta">▶ Play</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="future3">
+                            <img src="wedding.jpg" alt="future 3">
+                            <div class="movie-info">
+                                <div class="movie-title">Beach Wedding?</div>
+                                <div class="movie-meta">▶ Play</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="future4">
+                            <img src="babies.jpg" alt="future 4">
+                            <div class="movie-info">
+                                <div class="movie-title">"Our Babies"</div>
+                                <div class="movie-meta">▶ Play</div>
+                            </div>
+                        </div>
+                        <div class="movie-card" data-modal="future5">
+                            <img src="old.jpg" alt="future 5">
+                            <div class="movie-info">
+                                <div class="movie-title">"Growing Old"</div>
+                                <div class="movie-meta">▶ Play</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="height: 100px;"></div>
+    </div>
+
+    <!-- Valentine Question Modal -->
+    <div class="modal" id="valentineModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">×</button>
+            
+            <div id="questionView">
+                <h2 class="valentine-question">Aadhya Ramesh,Will You be my valentine</h2>
+                <p class="valentine-subtext">I cant even begin to imagine spending this valentines day with anybody else.so before other people get ideas ,will you be my valentine (good luck saying no)</p>
+                <div class="valentine-buttons">
+                    <button class="yes-btn" id="yesBtn">YES! ❤️</button>
+                    <button class="no-btn" id="noBtn">No</button>
+                </div>
+            </div>
+
+            <div class="success-message" id="successView">
+                <h2 class="success-title">YAAAAAY! 🎉</h2>
+                <p class="success-text">Thank you so much for saying yes.I promise to always get on my knees and apologize to you.Also use code:Aadhiisichusprincess for 10 free photos(of your choosing)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal for movie cards -->
+    <div class="modal" id="infoModal">
+        <div class="modal-content" style="text-align: left; padding: 0; overflow: hidden; max-width: 800px;">
+            <button class="close-modal" id="closeInfoModal">×</button>
+            <img class="modal-image" id="infoModalImage" src="" alt="" style="width: 100%; height: 400px; object-fit: cover;">
+            <div class="modal-body" style="padding: 30px;">
+                <h2 class="modal-title" id="infoModalTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 15px; letter-spacing: 1px;"></h2>
+                <p class="modal-text" id="infoModalText" style="font-size: 1.1rem; line-height: 1.6; color: #d2d2d2;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Profile Selection
+        function selectProfile(profile) {
+            const music = document.getElementById('bgMusic');
+            music.volume = 0.3;
+            music.play().catch(e => console.log('Audio play failed:', e));
+            
+            const navAvatar = document.getElementById('navAvatar');
+            if (profile === 'you') {
+                navAvatar.textContent = 'You';
+                navAvatar.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+            } else {
+                navAvatar.textContent = 'Him';
+                navAvatar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+            
+            const profilePage = document.getElementById('profilePage');
+            const mainSite = document.getElementById('mainSite');
+            
+            profilePage.classList.add('hidden');
+            setTimeout(() => {
+                profilePage.style.display = 'none';
+                mainSite.style.display = 'block';
+                setTimeout(() => {
+                    mainSite.classList.add('visible');
+                }, 50);
+            }, 500);
+        }
+
+        // Smooth scroll function
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded successfully!');
+            
+            // Navbar scroll effect
+            window.addEventListener('scroll', function() {
+                const navbar = document.getElementById('navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+
+            // Modal content data
+            const modalData = {
+                'memory1': {
+                    image: 'roof.jpg',
+                    title: 'The Roof',
+                    text: 'Prolly The most memorable place in our relationship.Remember how long we used to spend here back in the day.Also the first time we heard "Double Take"'
+                },
+                'memory2': {
+                    image: 'grad.jpg',
+                    title: 'Farewell',
+                    text: 'Some goodbyes arent forever,I always loved this photo cause this is one of the few photos i have where im holding my girl'
+                },
+                'memory3': {
+                    image: 'Shopping.jpg',
+                    title: 'Ernakulam',
+                    text: 'Definetly my favourite date,Gosh i dont even remember how many times i apologized to you,i miss sleeping against your shoulder in the bus' 
+                },
+                'memory4': {
+                    image: 'childrensday2.jpg',
+                    title: 'Childrens Day',
+                    text: 'Despite this not being our best childrens day,im still so glad that i got to spend it with you(p.s you look realyyyyy good)'
+                },
+                'memory5': {
+                    image: 'skribl.jpg',
+                    title: 'Scribble day',
+                    text: 'MY PONDATTIIIIIIIIIII.'
+                },
+                'reason1': {
+                    image: 'childrensday1.jpg',
+                    title: 'i can be myself around you',
+                    text: 'Theres no reason for me to act like somebody im not ,no reason to pretend or to lie abt me.With you i can just be me.around you im not Bro,Dude,Iz,Izy im just me im just ichu'
+                },
+                'reason2': {
+                    image: 'hair.jpg',
+                    title: 'Your Hair',
+                    text: 'You have the best, sexiest, cutest, most wonderfully DAMNN hair ever.It also smells really good ,like really fucking good(i have a photo of me smelling it) also the most pullable hair ever'
+                },
+                'reason3': {
+                    image: 'angry.jpg',
+                    title: 'Angry Aadhi',
+                    text: 'I have no idea why but its sooo cute when you get angry at me.maybe cause youre so expressive and i cant lie everytime you shout at me,it kinda turns me on.'
+                },
+                'reason4': {
+                    image: 'silly.jpg',
+                    title: 'My Girl',
+                    text: 'I just love how silly you are ,theres not even a ounce of nonchalance in your and thats exactly the kind of person im looking for,thats why i can say you are my girl'
+                },
+                'reason5': {
+                    image: 'woah.jpg',
+                    title: 'Just... Everything',
+                    text: 'I mean do I even have to explain this one.You are just everything i could ask for.Also why do you look so delicious in this photo.like damnnn is it hot in here or is it just me'
+                },
+                'future1': {
+                    image: 'hehe.jpg',
+                    title: 'Tasting you',
+                    text: 'I Mean......Do i really have to explain it?'
+                },
+                'future2': {
+                    image: 'sorry.jpg',
+                    title: 'Me apologizing',
+                    text: 'Trust me when i say this baby,theres gonna be a lot of me screwing up in the future,and if it means i have to get on my knees and beg like a dog for you to forgive me I WILL DO IT'
+                },
+                'future3': {
+                    image: 'wedding.jpg',
+                    title: 'Beach Wedding?',
+                    text: 'Ennik Veshakunu.Oru kalyanam kazhikyan thalparyam Undo😉?'
+                },
+                'future4': {
+                    image: 'babies.jpg',
+                    title: 'Our Babies',
+                    text: 'Thats Our Future babies sleeping.At night hopefully they sleep next to us.that is if we sleep at night tho......'
+                },
+                'future5': {
+                    image: 'old.jpg',
+                    title: 'Growing Old',
+                    text: 'Growing old with you is the final goal.obviously i will still have to apologize when we are old too and dw even when we are old i will still touch at you innappropriately every chance i get'
+                }
+                
+                
+            };
+
+            // Valentine Modal Logic
+            const valentineModal = document.getElementById('valentineModal');
+            const questionView = document.getElementById('questionView');
+            const successView = document.getElementById('successView');
+            const noBtn = document.getElementById('noBtn');
+            const yesBtn = document.getElementById('yesBtn');
+
+            // Play Memory button opens Valentine question
+            document.getElementById('playBtn').addEventListener('click', function() {
+                questionView.style.display = 'block';
+                successView.classList.remove('active');
+                valentineModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                noBtn.style.position = 'relative';
+                noBtn.style.left = '0';
+                noBtn.style.top = '0';
+            });
+
+            // Close modal
+            document.getElementById('closeModal').addEventListener('click', function() {
+                valentineModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+
+            valentineModal.addEventListener('click', function(e) {
+                if (e.target === valentineModal) {
+                    valentineModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Yes button
+            yesBtn.addEventListener('click', function() {
+                questionView.style.display = 'none';
+                successView.classList.add('active');
+                
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(createHeart, i * 100);
+                }
+            });
+
+            // No button - runs away
+            noBtn.addEventListener('mouseover', moveNoButton);
+            noBtn.addEventListener('click', moveNoButton);
+
+            function moveNoButton() {
+             // 1. Get the actual width/height of the button to prevent it going off screen
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+    
+            // 2. Calculate the maximum allowable X and Y positions
+            // We subtract the button size AND a 20px margin so it doesn't hit the edge
+            const maxX = window.innerWidth - btnWidth - 20;
+             const maxY = window.innerHeight - btnHeight - 20;
+
+             // 3. Generate random positions within these safe boundaries
+              const randomX = Math.random() * maxX;
+               const randomY = Math.random() * maxY;
+
+              // 4. Apply the new styles
+               noBtn.style.position = 'fixed'; // 'fixed' is better than 'absolute' for full screen movement
+               noBtn.style.left = randomX + 'px';
+               noBtn.style.top = randomY + 'px';
+    
+               // 5. Smooth out the movement (0.5s is slower and smoother than 0.3s)
+               noBtn.style.transition = 'top 0.4s ease, left 0.4s ease';
+        }
+
+            // More Info button
+            document.getElementById('infoBtn').addEventListener('click', function() {
+                openInfoModal('cover.jpg', 'Your Birthday', 'The Walk through the park after your birthday celebrations.Right before we celebrated the birthday.we were at the staircase,fooling around and we thought your dress tore');
+            });
+
+            // Info Modal functions
+            function openInfoModal(image, title, text) {
+                document.getElementById('infoModalImage').src = image;
+                document.getElementById('infoModalTitle').textContent = title;
+                document.getElementById('infoModalText').textContent = text;
+                document.getElementById('infoModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            document.getElementById('closeInfoModal').addEventListener('click', function() {
+                document.getElementById('infoModal').classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+
+            document.getElementById('infoModal').addEventListener('click', function(e) {
+                if (e.target.id === 'infoModal') {
+                    document.getElementById('infoModal').classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Movie cards open info modal
+            document.querySelectorAll('.movie-card').forEach(function(card) {
+                card.addEventListener('click', function() {
+                    const modalKey = this.getAttribute('data-modal');
+                    const data = modalData[modalKey];
+                    if (data) {
+                        openInfoModal(data.image, data.title, data.text);
+                    }
+                });
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    valentineModal.classList.remove('active');
+                    document.getElementById('infoModal').classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Create floating hearts
+            function createHeart() {
+                const container = document.getElementById('heartsContainer');
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart';
+                heart.innerHTML = '❤️';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                heart.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+                container.appendChild(heart);
+                
+                setTimeout(function() {
+                    heart.remove();
+                }, 6000);
+            }
+
+            setInterval(createHeart, 1000);
+            
+            console.log('All event listeners attached successfully!');
+        });
+    </script>
+</body>
+</html>
